@@ -17,7 +17,9 @@ import java.util.logging.Level;
 
 public final class MarineCommand implements CommandExecutor, TabCompleter {
 
-    private static final List<String> ROOT_ACTIONS = List.of("spawn", "call", "speed", "jump", "food", "show");
+    private static final List<String> ROOT_ACTIONS = List.of(
+            "spawn", "call", "speed", "jump", "food", "show", "help", "version"
+    );
     private static final List<String> MOB_NAMES = List.of("shark", "orca", "crab");
     private static final List<String> SHOW_ACTIONS = List.of(
             "start", "stop", "status", "reload", "list",
@@ -50,6 +52,11 @@ public final class MarineCommand implements CommandExecutor, TabCompleter {
             case "call" -> handleCall(sender, label, args);
             case "speed", "ride-speed" -> handleRideSpeed(sender, label, args);
             case "jump", "jump-height" -> handleJumpHeight(sender, label, args);
+            case "help" -> {
+                sendUsage(sender, label);
+                yield true;
+            }
+            case "version" -> handleVersion(sender);
             default -> {
                 sender.sendMessage("§cUnknown subcommand: " + args[0]);
                 sendUsage(sender, label);
@@ -65,6 +72,7 @@ public final class MarineCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length < 2 || args.length > 3) {
             sender.sendMessage("§eUsage: /" + label + " spawn <shark|orca|crab> [player]");
+            sender.sendMessage("§7Example: /" + label + " spawn orca");
             return true;
         }
 
@@ -123,6 +131,25 @@ public final class MarineCommand implements CommandExecutor, TabCompleter {
         if (mob.type() == MarineMobType.ORCA) {
             sender.sendMessage("§7Ride the orca, then use /" + label + " speed <1-50> to change its riding speed.");
         }
+
+        MarineMobService.MarineMob spawnedMob = mob;
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (mobs.isUsable(spawnedMob)) {
+                plugin.getLogger().info("Marine spawn verification passed after 2 ticks: mob="
+                        + type.name().toLowerCase(Locale.ROOT) + ", id=" + spawnedMob.id()
+                        + ", world=" + worldName);
+                return;
+            }
+
+            plugin.getLogger().warning("Marine spawn verification failed after 2 ticks: mob="
+                    + type.name().toLowerCase(Locale.ROOT) + ", id=" + spawnedMob.id()
+                    + ", world=" + worldName
+                    + ". The carrier entity was removed or invalidated after creation. "
+                    + "Check world-specific plugin filters, entity-spawn protection, and other plugins that remove entities.");
+            sender.sendMessage("§c" + type.displayName()
+                    + " was created but disappeared immediately. Another plugin or world rule may be removing it.");
+            sender.sendMessage("§7Check the server log for 'Marine spawn verification failed'.");
+        }, 2L);
         return true;
     }
 
@@ -251,6 +278,17 @@ public final class MarineCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    private boolean handleVersion(CommandSender sender) {
+        sender.sendMessage("§bFreeLifeMarineMobs §f" + plugin.getDescription().getVersion()
+                + " §7(target: Spigot 1.21.1 / Java 21)");
+        if (sender instanceof Player player) {
+            sender.sendMessage("§7World: §f" + player.getWorld().getName()
+                    + " §7| spawn permission: "
+                    + (player.hasPermission("freelifemarine.spawn") ? "§aYES" : "§cNO"));
+        }
+        return true;
+    }
+
     private boolean handleShow(CommandSender sender, String label, String[] args) {
         if (!sender.hasPermission("freelifemarine.show")) {
             sender.sendMessage("§cYou do not have permission to manage orca shows.");
@@ -306,12 +344,16 @@ public final class MarineCommand implements CommandExecutor, TabCompleter {
     }
 
     private static void sendUsage(CommandSender sender, String label) {
-        sender.sendMessage("§6FreeLife Sea commands:");
-        sender.sendMessage("§e/" + label + " spawn <shark|orca|crab> [player]");
-        sender.sendMessage("§e/" + label + " call");
-        sender.sendMessage("§e/" + label + " speed <1-50> | jump <3-13> §7(while driving an orca)");
-        sender.sendMessage("§e/" + label + " food [1-64]");
-        sender.sendMessage("§e/" + label + " show <...>");
+        sender.sendMessage("§6FreeLife Sea commands");
+        sender.sendMessage("§e/" + label + " spawn orca §7- シャチを出す");
+        sender.sendMessage("§e/" + label + " spawn shark §7- サメを出す");
+        sender.sendMessage("§e/" + label + " spawn crab §7- カニを出す");
+        sender.sendMessage("§e/" + label + " call §7- 最寄りのシャチを呼ぶ");
+        sender.sendMessage("§e/" + label + " speed <1-50> | jump <3-13> §7- 騎乗中のシャチ設定");
+        sender.sendMessage("§e/" + label + " food [1-64] §7- 海の餌");
+        sender.sendMessage("§e/" + label + " show <...> §7- シャチショー");
+        sender.sendMessage("§e/" + label + " version §7- 読み込まれているバージョンとspawn権限を確認");
+        sender.sendMessage("§7コマンド入力中にTabキーを押すと候補を表示できます。");
     }
 
     private static void sendShowUsage(CommandSender sender, String label) {
