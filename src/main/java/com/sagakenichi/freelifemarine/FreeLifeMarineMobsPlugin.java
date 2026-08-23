@@ -25,7 +25,7 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         showEnhancement = new OrcaShowEnhancementController(this, mobs);
         airFallGuard = new MarineAirFallGuard(this, mobs);
         MarineDamageFlash damageFlash = new MarineDamageFlash(this);
-        MarineCommand command = new MarineCommand(mobs, food, shows);
+        MarineCommand command = new MarineCommand(this, mobs, food, shows);
         PluginCommand marine = getCommand("marine");
         if (marine == null) {
             throw new IllegalStateException("Command 'marine' is missing from plugin.yml");
@@ -37,38 +37,20 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         shows.start();
         finalMotion.start();
         naturalBehavior.start();
-        // Run after normal ridden steering. This lets the breach detector measure the
-        // actual movement produced by W and turn only a fast upward surface approach
-        // into an airborne jump.
         riddenBreach.start();
         showEnhancement.start();
-        // Last motion pass: match falling-block gravity and keep resting surface mobs stable.
         airFallGuard.start();
-        getLogger().info("FreeLifeMarineMobs 1.12.0 enabled: tropical-fish-style autonomous swimming, falling-block gravity, water-surface stabilization, red damage flashes, mounted-only tuning, and scripted/rider breaches are active.");
+        getLogger().info("FreeLifeMarineMobs 1.12.1 enabled: /marine spawn diagnostics and complete tab suggestions are active alongside tropical-fish-style autonomous swimming.");
     }
 
     @Override
     public void onDisable() {
-        if (airFallGuard != null) {
-            airFallGuard.shutdown();
-        }
-        if (showEnhancement != null) {
-            showEnhancement.shutdown();
-        }
-        if (riddenBreach != null) {
-            riddenBreach.shutdown();
-        }
-        if (naturalBehavior != null) {
-            naturalBehavior.shutdown();
-        }
-        if (finalMotion != null) {
-            finalMotion.shutdown();
-        }
-        if (shows != null) {
-            shows.shutdown();
-        }
-        if (mobs != null) {
-            mobs.shutdown();
-        }
+        if (airFallGuard != null) airFallGuard.shutdown();
+        if (showEnhancement != null) showEnhancement.shutdown();
+        if (riddenBreach != null) riddenBreach.shutdown();
+        if (naturalBehavior != null) naturalBehavior.shutdown();
+        if (finalMotion != null) finalMotion.shutdown();
+        if (shows != null) shows.shutdown();
+        if (mobs != null) mobs.shutdown();
     }
 }
