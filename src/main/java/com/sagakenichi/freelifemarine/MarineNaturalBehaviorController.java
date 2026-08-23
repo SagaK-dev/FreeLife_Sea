@@ -136,7 +136,6 @@ final class MarineNaturalBehaviorController {
     private void applyFishStyleSwim(Entity entity, MarineMobService.MarineMob mob, SwimState state) {
         Location location = entity.getLocation();
         Vector velocity = entity.getVelocity();
-        double currentHorizontalSpeed = Math.hypot(velocity.getX(), velocity.getZ());
 
         boolean stagnating = state.isStagnating(location);
         int bodyCollisionScore = MarineCollisionGeometry.bodyCollisionScore(location, mob.type());
@@ -182,13 +181,9 @@ final class MarineNaturalBehaviorController {
                 MarineNaturalMotionProfile.minCruiseBlocksPerTick(mob.type()),
                 MarineNaturalMotionProfile.maxCruiseBlocksPerTick(mob.type()));
 
-        // FishMoveControl uses a 0.125 lerp toward requested movement speed.
-        double boundedCurrent = Math.min(currentHorizontalSpeed,
-                MarineNaturalMotionProfile.maxCruiseBlocksPerTick(mob.type()) * 1.25);
-        double nextSpeed = boundedCurrent + (targetSpeed - boundedCurrent) * SPEED_LERP;
-        if (nextSpeed < 0.01) {
-            nextSpeed = MarineNaturalMotionProfile.minCruiseBlocksPerTick(mob.type());
-        }
+        // Keep a controller-owned speed state so earlier marine controllers cannot
+        // re-inject their old high autonomous speed before this final fish-style pass.
+        double nextSpeed = state.updateSwimSpeed(mob.type(), targetSpeed);
 
         double vertical = fishVerticalVelocity(location, velocity.getY(), target, nextSpeed,
                 mob.type(), state.phase);
@@ -529,12 +524,15 @@ final class MarineNaturalBehaviorController {
         private long roamTargetExpiresTick;
         private double lastRoamDistance = Double.POSITIVE_INFINITY;
         private int stagnantTicks;
+        private double swimSpeed;
 
-        private SwimState(double phase, double pace, double targetPace, long nextPaceChangeTick) {
+        private SwimState(double phase, double pace, double targetPace,
+                          long nextPaceChangeTick, double swimSpeed) {
             this.phase = phase;
             this.pace = pace;
             this.targetPace = targetPace;
             this.nextPaceChangeTick = nextPaceChangeTick;
+            this.swimSpeed = swimSpeed;
         }
 
         private static SwimState create(MarineMobType type, long tick) {
@@ -545,7 +543,12 @@ final class MarineNaturalBehaviorController {
             long next = tick + random.nextInt(
                     MarineNaturalMotionProfile.minPaceHoldTicks(type),
                     MarineNaturalMotionProfile.maxPaceHoldTicksExclusive(type));
-            return new SwimState(random.nextDouble(0.0, Math.PI * 2.0), pace, pace, next);
+            double initialSpeed = clamp(
+                    MarineNaturalMotionProfile.baseCruiseBlocksPerTick(type) * pace,
+                    MarineNaturalMotionProfile.minCruiseBlocksPerTick(type),
+                    MarineNaturalMotionProfile.maxCruiseBlocksPerTick(type));
+            return new SwimState(random.nextDouble(0.0, Math.PI * 2.0),
+                    pace, pace, next, initialSpeed);
         }
 
         private void updatePace(MarineMobType type, long tick) {
@@ -559,6 +562,14 @@ final class MarineNaturalBehaviorController {
                         MarineNaturalMotionProfile.maxPaceHoldTicksExclusive(type));
             }
             pace += (targetPace - pace) * 0.045;
+        }
+
+        private double updateSwimSpeed(MarineMobType type, double targetSpeed) {
+            swimSpeed += (targetSpeed - swimSpeed) * SPEED_LERP;
+            swimSpeed = clamp(swimSpeed,
+                    MarineNaturalMotionProfile.minCruiseBlocksPerTick(type),
+                    MarineNaturalMotionProfile.maxCruiseBlocksPerTick(type));
+            return swimSpeed;
         }
 
         private boolean needsRoamTarget(Location location, long tick) {
