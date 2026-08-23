@@ -39,7 +39,7 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         // into an airborne jump.
         riddenBreach.start();
         showEnhancement.start();
-        getLogger().info("FreeLifeMarineMobs 1.10.0 enabled: seven-second roaming targets, rider-driven surface breaches, boat-impact breaking, deterministic air gravity, and configurable 1-50 blocks/s orca riding are active.");
+        getLogger().info("FreeLifeMarineMobs 1.11.0 enabled: simple /marine spawn <mob>, mounted-only orca tuning, seven-second roaming targets, rider-driven surface breaches, and configurable 1-50 blocks/s riding are active.");
     }
 
     @Override
