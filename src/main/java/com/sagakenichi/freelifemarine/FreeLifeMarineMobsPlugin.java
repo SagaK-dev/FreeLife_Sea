@@ -44,7 +44,7 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         showEnhancement.start();
         // Last motion pass: match falling-block gravity and keep resting surface mobs stable.
         airFallGuard.start();
-        getLogger().info("FreeLifeMarineMobs 1.11.2 enabled: falling-block gravity, water-surface stabilization, red damage flashes, mounted-only tuning, and natural marine movement are active.");
+        getLogger().info("FreeLifeMarineMobs 1.12.0 enabled: tropical-fish-style autonomous swimming, falling-block gravity, water-surface stabilization, red damage flashes, mounted-only tuning, and scripted/rider breaches are active.");
     }
 
     @Override
