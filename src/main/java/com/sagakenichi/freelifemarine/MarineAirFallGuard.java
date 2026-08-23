@@ -74,6 +74,20 @@ final class MarineAirFallGuard {
                 seen.add(id);
                 Location location = entity.getLocation();
 
+                /*
+                 * MarineFinalMotionController disables native gravity while it manually
+                 * integrates a real airborne breach. During that pass it deliberately sets
+                 * the Bukkit velocity to zero so vanilla physics cannot move the carrier a
+                 * second time. Treating that zero velocity as a stall would snap the animal
+                 * back to the water surface on the next guard pass, cancelling rider, call,
+                 * and show jumps. Native-gravity-off in open air therefore belongs entirely
+                 * to the final motion controller and must not be corrected here.
+                 */
+                if (!entity.hasGravity() && !isWaterOrSurfaceContact(location)) {
+                    samples.remove(id);
+                    continue;
+                }
+
                 if (stabilizeAtWaterSurface(entity, location)) {
                     samples.remove(id);
                     continue;
