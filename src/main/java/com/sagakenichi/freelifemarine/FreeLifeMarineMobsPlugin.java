@@ -38,7 +38,7 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         riddenBreach.start();
         showEnhancement.start();
         airFallGuard.start();
-        getLogger().info("FreeLifeMarineMobs 1.12.4 enabled: /marine and dedicated /freelifesea are registered with real tab suggestions and spawn diagnostics.");
+        getLogger().info("FreeLifeMarineMobs 1.12.5 enabled: cross-client ridden orca input compatibility is active.");
     }
 
     private void registerCommand(String name, MarineCommand command) {
