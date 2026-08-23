@@ -1,15 +1,19 @@
 package com.sagakenichi.freelifemarine;
 
 /**
- * Deterministic airborne kinematics used when the carrier entity cannot be trusted
- * to apply vanilla gravity consistently on a live server.
+ * Deterministic airborne kinematics for marine carriers.
+ *
+ * <p>FallingBlockEntity in Minecraft 1.21.1 applies 0.04 gravity per tick and then
+ * multiplies velocity by 0.98. Keeping the same constants makes an unsupported shark
+ * or orca fall at the same rate as sand and gravel instead of using living-entity
+ * gravity.</p>
  */
 final class MarineAirKinematics {
 
-    static final double GRAVITY_PER_TICK = 0.08;
+    static final double GRAVITY_PER_TICK = 0.04;
     static final double VERTICAL_DRAG = 0.98;
     static final double HORIZONTAL_DRAG = 0.98;
-    static final double TERMINAL_FALL_SPEED = -3.92;
+    static final double TERMINAL_FALL_SPEED = -1.96;
     static final double MAX_SWEEP_STEP = 0.20;
 
     private MarineAirKinematics() {
