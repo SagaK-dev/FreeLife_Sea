@@ -23,17 +23,17 @@ import java.util.UUID;
 /**
  * Safety pass for aquatic carrier entities that have stopped moving while unsupported.
  *
- * <p>The normal breach code is allowed to control its own arc. This guard only intervenes
- * after an orca or shark has remained at effectively the same Y position for several
- * consecutive ticks while outside water and off the ground. At that point native gravity
- * is restored and a small downward velocity breaks the hover state.</p>
+ * <p>The normal breach code controls its own arc. This guard intervenes only after an
+ * orca or shark remains at effectively the same Y position for several consecutive ticks
+ * while genuinely in open air. Water directly under the carrier counts as surface
+ * support, so an animal floating at the water line is never pushed downward by this
+ * recovery path.</p>
  */
 final class MarineAirFallGuard {
 
     private static final double STAGNANT_Y_EPSILON = 0.003;
     private static final double STAGNANT_VERTICAL_SPEED = 0.04;
     private static final int STAGNANT_TICKS_BEFORE_RECOVERY = 3;
-    private static final double RECOVERY_FALL_SPEED = -0.24;
 
     private final JavaPlugin plugin;
     private final MarineMobService mobs;
@@ -72,7 +72,9 @@ final class MarineAirFallGuard {
                 seen.add(id);
                 Location location = entity.getLocation();
 
-                if (isWaterContact(location) || entity.isOnGround()) {
+                // Treat the water surface as support. The anchor can sit slightly above
+                // the top water block while the visible model appears to float on it.
+                if (isWaterOrSurfaceContact(location) || entity.isOnGround()) {
                     samples.remove(id);
                     continue;
                 }
@@ -95,7 +97,9 @@ final class MarineAirFallGuard {
 
                 entity.setGravity(true);
                 Vector velocity = entity.getVelocity();
-                velocity.setY(Math.min(velocity.getY(), RECOVERY_FALL_SPEED));
+                // First falling tick matches FallingBlockEntity: (0 - 0.04) * 0.98.
+                double fallingBlockStep = MarineAirKinematics.nextVerticalVelocity(0.0);
+                velocity.setY(Math.min(velocity.getY(), fallingBlockStep));
                 entity.setVelocity(velocity);
                 sample.stagnantTicks = 0;
             }
@@ -104,10 +108,12 @@ final class MarineAirFallGuard {
         samples.keySet().retainAll(seen);
     }
 
-    private static boolean isWaterContact(Location location) {
+    private static boolean isWaterOrSurfaceContact(Location location) {
         return isWaterAt(location)
                 || isWaterAt(location.clone().add(0.0, 0.35, 0.0))
-                || isWaterAt(location.clone().add(0.0, -0.45, 0.0));
+                || isWaterAt(location.clone().add(0.0, -0.45, 0.0))
+                || isWaterAt(location.clone().add(0.0, -0.85, 0.0))
+                || isWaterAt(location.clone().add(0.0, -1.15, 0.0));
     }
 
     private static boolean isWaterAt(Location location) {
