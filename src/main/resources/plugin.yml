@@ -1,9 +1,9 @@
 name: FreeLifeMarineMobs
-version: 1.12.4
+version: 1.12.5
 main: com.sagakenichi.freelifemarine.FreeLifeMarineMobsPlugin
 api-version: '1.21'
 author: Naokibot
-description: Animated marine mobs with tropical-fish-style autonomous swimming, robust spawn diagnostics, isolated airborne breach handling, mounted orca tuning, falling-block gravity, water-surface stabilization, red damage flashes, rider-driven breaches, and scheduled orca shows.
+description: Animated marine mobs with cross-client ridden orca input compatibility, tropical-fish-style autonomous swimming, robust spawn diagnostics, isolated airborne breach handling, mounted orca tuning, falling-block gravity, water-surface stabilization, red damage flashes, rider-driven breaches, and scheduled orca shows.
 commands:
   marine:
     aliases: [flsea]
