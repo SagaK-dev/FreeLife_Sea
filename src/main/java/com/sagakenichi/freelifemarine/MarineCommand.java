@@ -107,7 +107,7 @@ public final class MarineCommand implements CommandExecutor, TabCompleter {
                         + " spawn <shark|orca|crab> <player> or run it from a command block.");
                 return true;
             }
-        } catch (RuntimeException ex) {
+        } catch (RuntimeException | LinkageError ex) {
             plugin.getLogger().log(Level.SEVERE,
                     "Marine spawn failed after command was accepted: sender=" + source
                             + ", mob=" + type.name().toLowerCase(Locale.ROOT)
