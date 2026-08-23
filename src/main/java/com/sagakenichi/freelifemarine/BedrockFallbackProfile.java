@@ -79,8 +79,8 @@ final class BedrockFallbackProfile {
 
     record Part(Material material, double forward, double up, double right, boolean small) {
         Part {
-            if (material == null || material.isAir()) {
-                throw new IllegalArgumentException("Bedrock fallback material must be visible");
+            if (material == null) {
+                throw new IllegalArgumentException("Bedrock fallback material is required");
             }
         }
     }
