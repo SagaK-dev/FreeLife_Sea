@@ -18,7 +18,7 @@ final class PluginDescriptorTest {
             assertNotNull(stream, "plugin.yml must be present in the test classpath");
             String descriptor = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
 
-            assertTrue(descriptor.contains("version: 1.12.4"));
+            assertTrue(descriptor.contains("version: 1.12.5"));
             assertTrue(descriptor.contains("  marine:\n"));
             assertTrue(descriptor.contains("  freelifesea:\n"));
             assertTrue(descriptor.contains("aliases: [flsea]"));
