@@ -6,7 +6,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.BlockDisplay;
-import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
@@ -43,11 +42,8 @@ final class MarineDamageFlash {
         }
 
         long flashGeneration = ++generation;
-        for (Entity entity : world.getNearbyEntities(base, 7.0, 4.5, 7.0)) {
-            if (!(entity instanceof BlockDisplay display) || !display.isValid()) {
-                continue;
-            }
-            if (!belongsToModel(display, base, mob.type())) {
+        for (BlockDisplay display : world.getEntitiesByClass(BlockDisplay.class)) {
+            if (!display.isValid() || !belongsToModel(display, base, mob.type())) {
                 continue;
             }
 
