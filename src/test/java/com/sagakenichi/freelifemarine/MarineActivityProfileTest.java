@@ -25,11 +25,17 @@ class MarineActivityProfileTest {
     }
 
     @Test
-    void autonomousChangesAndBreachesAreFrequent() {
+    void autonomousSwimmingKeepsBreachesEffectivelyDisabled() {
         assertTrue(MarineActivityProfile.maxBehaviorTicksExclusive(MarineMobType.ORCA) <= 56);
         assertTrue(MarineActivityProfile.maxBehaviorTicksExclusive(MarineMobType.SHARK) <= 76);
-        assertEquals(100, MarineActivityProfile.minJumpDelayTicks(MarineMobType.ORCA));
-        assertEquals(200, MarineActivityProfile.minJumpDelayTicks(MarineMobType.SHARK));
+
+        int orcaMinJump = MarineActivityProfile.minJumpDelayTicks(MarineMobType.ORCA);
+        int sharkMinJump = MarineActivityProfile.minJumpDelayTicks(MarineMobType.SHARK);
+        assertTrue(orcaMinJump >= 1_000_000_000);
+        assertTrue(sharkMinJump >= 1_000_000_000);
+        assertTrue(MarineActivityProfile.maxJumpDelayTicksExclusive(MarineMobType.ORCA) > orcaMinJump);
+        assertTrue(MarineActivityProfile.maxJumpDelayTicksExclusive(MarineMobType.SHARK) > sharkMinJump);
+
         assertTrue(MarineActivityProfile.maxYawChange(MarineMobType.ORCA) >= 65.0);
     }
 }
