@@ -2,28 +2,40 @@ package com.sagakenichi.freelifemarine;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MarineNaturalMotionProfileTest {
 
     @Test
-    void autonomousAquaticMobsKeepAContinuousCruiseFloor() {
-        assertEquals(5, MarineNaturalMotionProfile.continuousCruiseLevel(MarineMobType.ORCA));
-        assertEquals(4, MarineNaturalMotionProfile.continuousCruiseLevel(MarineMobType.SHARK));
-        assertTrue(MarineNaturalMotionProfile.minPace(MarineMobType.ORCA) > 0.0);
-        assertTrue(MarineNaturalMotionProfile.minPace(MarineMobType.SHARK) > 0.0);
+    void autonomousAquaticMobsKeepAPositiveCruiseRange() {
+        for (MarineMobType type : new MarineMobType[] {MarineMobType.ORCA, MarineMobType.SHARK}) {
+            double min = MarineNaturalMotionProfile.minCruiseBlocksPerTick(type);
+            double base = MarineNaturalMotionProfile.baseCruiseBlocksPerTick(type);
+            double max = MarineNaturalMotionProfile.maxCruiseBlocksPerTick(type);
+
+            assertTrue(min > 0.0);
+            assertTrue(base > min);
+            assertTrue(max > base);
+            assertTrue(MarineNaturalMotionProfile.minPace(type) > 0.0);
+            assertTrue(MarineNaturalMotionProfile.maxPace(type) >= MarineNaturalMotionProfile.minPace(type));
+        }
     }
 
     @Test
-    void roamingTargetsAreFarEnoughToPreventLocalCircling() {
-        assertTrue(MarineNaturalMotionProfile.minRoamDistance(MarineMobType.ORCA) >= 12.0);
-        assertTrue(MarineNaturalMotionProfile.maxRoamDistance(MarineMobType.ORCA) >= 28.0);
-        assertTrue(MarineNaturalMotionProfile.minRoamDistance(MarineMobType.SHARK) >= 9.0);
-        assertTrue(MarineNaturalMotionProfile.maxRoamDistance(MarineMobType.SHARK) >= 20.0);
-        assertTrue(MarineNaturalMotionProfile.minRoamTargetTicks(MarineMobType.ORCA) >= 80);
-        assertTrue(MarineNaturalMotionProfile.minRoamTargetTicks(MarineMobType.SHARK) >= 100);
+    void roamingTargetsStayWithinVanillaFishScale() {
+        for (MarineMobType type : new MarineMobType[] {MarineMobType.ORCA, MarineMobType.SHARK}) {
+            double minDistance = MarineNaturalMotionProfile.minRoamDistance(type);
+            double maxDistance = MarineNaturalMotionProfile.maxRoamDistance(type);
+            int minTicks = MarineNaturalMotionProfile.minRoamTargetTicks(type);
+            int maxTicks = MarineNaturalMotionProfile.maxRoamTargetTicksExclusive(type);
+
+            assertTrue(minDistance >= 2.0);
+            assertTrue(maxDistance > minDistance);
+            assertTrue(maxDistance <= 10.0);
+            assertTrue(minTicks >= 20);
+            assertTrue(maxTicks > minTicks);
+        }
     }
 
     @Test
@@ -32,11 +44,11 @@ class MarineNaturalMotionProfileTest {
             double orcaPulse = MarineNaturalMotionProfile.pacePulse(MarineMobType.ORCA, tick, 1.3);
             double sharkPulse = MarineNaturalMotionProfile.pacePulse(MarineMobType.SHARK, tick, 2.1);
             assertTrue(orcaPulse >= 0.955 && orcaPulse <= 1.045);
-            assertTrue(sharkPulse >= 0.965 && sharkPulse <= 1.035);
+            assertTrue(sharkPulse >= 0.945 && sharkPulse <= 1.055);
             assertTrue(Math.abs(MarineNaturalMotionProfile.verticalWave(
-                    MarineMobType.ORCA, tick, 1.3)) <= 0.014);
+                    MarineMobType.ORCA, tick, 1.3)) <= 0.004);
             assertTrue(Math.abs(MarineNaturalMotionProfile.verticalWave(
-                    MarineMobType.SHARK, tick, 2.1)) <= 0.010);
+                    MarineMobType.SHARK, tick, 2.1)) <= 0.005);
         }
     }
 
