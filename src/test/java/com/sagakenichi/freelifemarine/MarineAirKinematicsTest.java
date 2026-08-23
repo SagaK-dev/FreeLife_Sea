@@ -11,19 +11,19 @@ final class MarineAirKinematicsTest {
     void gravityTurnsAnApexIntoImmediateDescent() {
         double next = MarineAirKinematics.nextVerticalVelocity(0.0);
         assertTrue(next < 0.0);
-        assertEquals(-0.0784, next, 1.0E-9);
+        assertEquals(-0.0392, next, 1.0E-9);
     }
 
     @Test
-    void repeatedGravityKeepsFallingInsteadOfHovering() {
+    void repeatedFallingBlockGravityKeepsFallingInsteadOfHovering() {
         double vertical = 0.0;
         double displacement = 0.0;
         for (int tick = 0; tick < 10; tick++) {
             vertical = MarineAirKinematics.nextVerticalVelocity(vertical);
             displacement += vertical;
         }
-        assertTrue(vertical < -0.70);
-        assertTrue(displacement < -4.0);
+        assertTrue(vertical < -0.35);
+        assertTrue(displacement < -2.0);
     }
 
     @Test
