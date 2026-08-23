@@ -1,5 +1,5 @@
 name: FreeLifeMarineMobs
-version: 1.12.2
+version: 1.12.3
 main: com.sagakenichi.freelifemarine.FreeLifeMarineMobsPlugin
 api-version: '1.21'
 author: Naokibot
@@ -8,7 +8,6 @@ commands:
   marine:
     aliases: [freelifesea, flsea]
     description: Manage FreeLife marine mobs, calls, mounted tuning, marine food, and orca shows.
-    usage: /marine <spawn|call|speed|jump|food|show>
 permissions:
   freelifemarine.spawn:
     description: Allows spawning shark, orca, and crab mobs, including from command blocks.
