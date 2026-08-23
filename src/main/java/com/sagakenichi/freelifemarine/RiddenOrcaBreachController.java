@@ -68,7 +68,8 @@ final class RiddenOrcaBreachController {
             for (Horse horse : world.getEntitiesByClass(Horse.class)) {
                 MarineMobService.MarineMob mob = mobs.find(horse);
                 if (mob == null || !mob.id().equals(horse.getUniqueId())
-                        || mob.type() != MarineMobType.ORCA || mob.showControlled()) {
+                        || mob.type() != MarineMobType.ORCA || mob.showControlled()
+                        || mob.commandControlled()) {
                     continue;
                 }
 
@@ -114,7 +115,6 @@ final class RiddenOrcaBreachController {
                 }
                 horizontal.normalize();
 
-                // Require the measured travel direction to agree with the rider's gaze.
                 Vector measured = new Vector(dx, 0.0, dz).normalize();
                 if (measured.dot(horizontal) < 0.55) {
                     continue;
@@ -158,7 +158,6 @@ final class RiddenOrcaBreachController {
         if (velocity.getY() <= AUTONOMOUS_BREACH_VERTICAL_THRESHOLD) {
             return;
         }
-        // Keep horizontal roaming intact while preventing a scheduler-generated breach.
         horse.setVelocity(new Vector(velocity.getX(), 0.035, velocity.getZ()));
     }
 
