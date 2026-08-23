@@ -26,12 +26,10 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         airFallGuard = new MarineAirFallGuard(this, mobs);
         MarineDamageFlash damageFlash = new MarineDamageFlash(this);
         MarineCommand command = new MarineCommand(this, mobs, food, shows);
-        PluginCommand marine = getCommand("marine");
-        if (marine == null) {
-            throw new IllegalStateException("Command 'marine' is missing from plugin.yml");
-        }
-        marine.setExecutor(command);
-        marine.setTabCompleter(command);
+
+        registerCommand("marine", command);
+        registerCommand("freelifesea", command);
+
         getServer().getPluginManager().registerEvents(new MarineMobListener(mobs, damageFlash), this);
         mobs.start();
         shows.start();
@@ -40,7 +38,16 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         riddenBreach.start();
         showEnhancement.start();
         airFallGuard.start();
-        getLogger().info("FreeLifeMarineMobs 1.12.3 enabled: real tab suggestions, post-spawn verification, reviewed breach isolation, and tropical-fish-style autonomous swimming are active.");
+        getLogger().info("FreeLifeMarineMobs 1.12.4 enabled: /marine and dedicated /freelifesea are registered with real tab suggestions and spawn diagnostics.");
+    }
+
+    private void registerCommand(String name, MarineCommand command) {
+        PluginCommand registered = getCommand(name);
+        if (registered == null) {
+            throw new IllegalStateException("Command '" + name + "' is missing from plugin.yml");
+        }
+        registered.setExecutor(command);
+        registered.setTabCompleter(command);
     }
 
     @Override
