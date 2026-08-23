@@ -34,6 +34,8 @@ final class MarineAirFallGuard {
     private static final double STAGNANT_Y_EPSILON = 0.003;
     private static final double STAGNANT_VERTICAL_SPEED = 0.04;
     private static final int STAGNANT_TICKS_BEFORE_RECOVERY = 3;
+    private static final double SURFACE_STABILIZE_MAX_VERTICAL_SPEED = 0.08;
+    private static final double SURFACE_ANCHOR_OFFSET = 0.88;
 
     private final JavaPlugin plugin;
     private final MarineMobService mobs;
@@ -72,8 +74,11 @@ final class MarineAirFallGuard {
                 seen.add(id);
                 Location location = entity.getLocation();
 
-                // Treat the water surface as support. The anchor can sit slightly above
-                // the top water block while the visible model appears to float on it.
+                if (stabilizeAtWaterSurface(entity, location)) {
+                    samples.remove(id);
+                    continue;
+                }
+
                 if (isWaterOrSurfaceContact(location) || entity.isOnGround()) {
                     samples.remove(id);
                     continue;
@@ -108,6 +113,42 @@ final class MarineAirFallGuard {
         samples.keySet().retainAll(seen);
     }
 
+    private static boolean stabilizeAtWaterSurface(Entity entity, Location location) {
+        if (isWaterAt(location) || Math.abs(entity.getVelocity().getY()) > SURFACE_STABILIZE_MAX_VERTICAL_SPEED) {
+            return false;
+        }
+
+        Block surfaceWater = findSurfaceWaterBelow(location);
+        if (surfaceWater == null) {
+            return false;
+        }
+
+        Location stable = location.clone();
+        stable.setY(surfaceWater.getY() + SURFACE_ANCHOR_OFFSET);
+        entity.teleport(stable);
+        entity.setGravity(true);
+        Vector velocity = entity.getVelocity();
+        velocity.setY(0.0);
+        entity.setVelocity(velocity);
+        entity.setFallDistance(0.0F);
+        return true;
+    }
+
+    private static Block findSurfaceWaterBelow(Location location) {
+        double[] probes = {0.20, 0.40, 0.60, 0.80, 1.00, 1.20};
+        for (double down : probes) {
+            Block block = location.clone().add(0.0, -down, 0.0).getBlock();
+            if (!isWater(block)) {
+                continue;
+            }
+            Block above = block.getRelative(0, 1, 0);
+            if (!isWater(above)) {
+                return block;
+            }
+        }
+        return null;
+    }
+
     private static boolean isWaterOrSurfaceContact(Location location) {
         return isWaterAt(location)
                 || isWaterAt(location.clone().add(0.0, 0.35, 0.0))
@@ -117,7 +158,10 @@ final class MarineAirFallGuard {
     }
 
     private static boolean isWaterAt(Location location) {
-        Block block = location.getBlock();
+        return isWater(location.getBlock());
+    }
+
+    private static boolean isWater(Block block) {
         Material type = block.getType();
         if (type == Material.WATER || type == Material.BUBBLE_COLUMN) {
             return true;
