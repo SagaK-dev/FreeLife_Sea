@@ -11,6 +11,7 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
     private MarineNaturalBehaviorController naturalBehavior;
     private RiddenOrcaBreachController riddenBreach;
     private OrcaShowEnhancementController showEnhancement;
+    private MarineAirFallGuard airFallGuard;
 
     @Override
     public void onEnable() {
@@ -22,6 +23,8 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         naturalBehavior = new MarineNaturalBehaviorController(this, mobs);
         riddenBreach = new RiddenOrcaBreachController(this, mobs);
         showEnhancement = new OrcaShowEnhancementController(this, mobs);
+        airFallGuard = new MarineAirFallGuard(this, mobs);
+        MarineDamageFlash damageFlash = new MarineDamageFlash(this);
         MarineCommand command = new MarineCommand(mobs, food, shows);
         PluginCommand marine = getCommand("marine");
         if (marine == null) {
@@ -29,7 +32,7 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         }
         marine.setExecutor(command);
         marine.setTabCompleter(command);
-        getServer().getPluginManager().registerEvents(new MarineMobListener(mobs), this);
+        getServer().getPluginManager().registerEvents(new MarineMobListener(mobs, damageFlash), this);
         mobs.start();
         shows.start();
         finalMotion.start();
@@ -39,11 +42,16 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         // into an airborne jump.
         riddenBreach.start();
         showEnhancement.start();
-        getLogger().info("FreeLifeMarineMobs 1.11.0 enabled: simple /marine spawn <mob>, mounted-only orca tuning, seven-second roaming targets, rider-driven surface breaches, and configurable 1-50 blocks/s riding are active.");
+        // Last motion pass: only breaks true midair stalls, so normal breach arcs remain intact.
+        airFallGuard.start();
+        getLogger().info("FreeLifeMarineMobs 1.11.1 enabled: midair-stall recovery and red damage flashes are active alongside mounted-only tuning and natural marine movement.");
     }
 
     @Override
     public void onDisable() {
+        if (airFallGuard != null) {
+            airFallGuard.shutdown();
+        }
         if (showEnhancement != null) {
             showEnhancement.shutdown();
         }
