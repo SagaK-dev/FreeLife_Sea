@@ -12,6 +12,8 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
     private RiddenOrcaBreachController riddenBreach;
     private OrcaShowEnhancementController showEnhancement;
     private MarineAirFallGuard airFallGuard;
+    private MarineAutonomousMotionCommitter autonomousMotion;
+    private MarineBedrockFallbackRenderer bedrockRenderer;
 
     @Override
     public void onEnable() {
@@ -24,6 +26,8 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         riddenBreach = new RiddenOrcaBreachController(this, mobs);
         showEnhancement = new OrcaShowEnhancementController(this, mobs);
         airFallGuard = new MarineAirFallGuard(this, mobs);
+        autonomousMotion = new MarineAutonomousMotionCommitter(this, mobs);
+        bedrockRenderer = new MarineBedrockFallbackRenderer(this, mobs);
         MarineDamageFlash damageFlash = new MarineDamageFlash(this);
         MarineCommand command = new MarineCommand(this, mobs, food, shows);
 
@@ -38,7 +42,9 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         riddenBreach.start();
         showEnhancement.start();
         airFallGuard.start();
-        getLogger().info("FreeLifeMarineMobs 1.12.5 enabled: cross-client ridden orca input compatibility is active.");
+        autonomousMotion.start();
+        bedrockRenderer.start();
+        getLogger().info("FreeLifeMarineMobs 1.12.6 enabled: server-committed autonomous swimming and Geyser/Floodgate Bedrock fallback models are active.");
     }
 
     private void registerCommand(String name, MarineCommand command) {
@@ -52,6 +58,8 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (bedrockRenderer != null) bedrockRenderer.shutdown();
+        if (autonomousMotion != null) autonomousMotion.shutdown();
         if (airFallGuard != null) airFallGuard.shutdown();
         if (showEnhancement != null) showEnhancement.shutdown();
         if (riddenBreach != null) riddenBreach.shutdown();
