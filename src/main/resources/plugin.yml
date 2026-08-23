@@ -1,12 +1,12 @@
 name: FreeLifeMarineMobs
-version: 1.10.0
+version: 1.11.0
 main: com.sagakenichi.freelifemarine.FreeLifeMarineMobsPlugin
 api-version: '1.21'
 author: Naokibot
-description: Animated marine mobs with configurable orca riding, autonomous roaming, breach jumps, command-block spawning, and scheduled orca shows.
+description: Animated marine mobs with simple spawning, mounted orca tuning, autonomous roaming, rider-driven breaches, and scheduled orca shows.
 commands:
   marine:
-    description: Manage FreeLife marine mobs, calls, tuning, marine food, and orca shows.
+    description: Manage FreeLife marine mobs, calls, mounted tuning, marine food, and orca shows.
     usage: /marine <spawn|call|speed|jump|food|show>
 permissions:
   freelifemarine.spawn:
@@ -16,7 +16,7 @@ permissions:
     description: Allows calling the nearest spawned orca to the player.
     default: op
   freelifemarine.tune:
-    description: Allows changing an orca's riding speed and jump height.
+    description: Allows changing an orca's settings while driving it.
     default: op
   freelifemarine.food:
     description: Allows receiving the custom marine food item.
