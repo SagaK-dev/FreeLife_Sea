@@ -40,7 +40,7 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         riddenBreach.start();
         showEnhancement.start();
         airFallGuard.start();
-        getLogger().info("FreeLifeMarineMobs 1.12.2 enabled: reviewed breach isolation, spawn diagnostics, and complete tab suggestions are active alongside tropical-fish-style autonomous swimming.");
+        getLogger().info("FreeLifeMarineMobs 1.12.3 enabled: real tab suggestions, post-spawn verification, reviewed breach isolation, and tropical-fish-style autonomous swimming are active.");
     }
 
     @Override
