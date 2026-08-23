@@ -6,7 +6,7 @@
 
     <groupId>com.sagakenichi</groupId>
     <artifactId>freelife-marine-mobs</artifactId>
-    <version>1.11.1</version>
+    <version>1.11.2</version>
     <name>FreeLifeMarineMobs</name>
 
     <properties>
