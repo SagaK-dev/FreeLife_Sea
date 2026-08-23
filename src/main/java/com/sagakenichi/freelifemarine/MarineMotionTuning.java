@@ -14,7 +14,10 @@ final class MarineMotionTuning {
     static final int MAX_ORCA_JUMP_HEIGHT = 13;
     static final int DEFAULT_ORCA_JUMP_HEIGHT = 10;
 
-    private static final double RIDER_INPUT_MIN_SPEED = 0.018;
+    // Java Edition can produce only a few thousandths of a block per tick from a
+    // saddled horse while it is submerged. Keep the gate low enough to recognize
+    // that forward input; the alignment check below still rejects drift and reverse input.
+    private static final double RIDER_INPUT_MIN_SPEED = 0.002;
     private static final double RIDER_FORWARD_ALIGNMENT = 0.40;
     private static final double STALL_MINIMUM_DESCENT = -0.025;
     private static final double STALL_MAX_VERTICAL_VELOCITY = 0.15;
@@ -24,7 +27,9 @@ final class MarineMotionTuning {
     }
 
     static boolean hasForwardRiderIntent(double horizontalSpeed, double forwardAlignment) {
-        return horizontalSpeed >= RIDER_INPUT_MIN_SPEED
+        return Double.isFinite(horizontalSpeed)
+                && Double.isFinite(forwardAlignment)
+                && horizontalSpeed >= RIDER_INPUT_MIN_SPEED
                 && forwardAlignment >= RIDER_FORWARD_ALIGNMENT;
     }
 
