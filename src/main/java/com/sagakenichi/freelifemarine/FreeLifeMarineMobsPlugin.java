@@ -27,8 +27,8 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         showEnhancement = new OrcaShowEnhancementController(this, mobs);
         airFallGuard = new MarineAirFallGuard(this, mobs);
         autonomousMotion = new MarineAutonomousMotionCommitter(this, mobs);
-        bedrockRenderer = new MarineBedrockFallbackRenderer(this, mobs);
         MarineDamageFlash damageFlash = new MarineDamageFlash(this);
+        bedrockRenderer = new MarineBedrockFallbackRenderer(this, mobs, damageFlash);
         MarineCommand command = new MarineCommand(this, mobs, food, shows);
 
         registerCommand("marine", command);
