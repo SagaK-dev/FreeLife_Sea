@@ -9,7 +9,10 @@ import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Slime;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -41,14 +44,17 @@ final class MarineBedrockFallbackRenderer implements Listener {
 
     private final JavaPlugin plugin;
     private final MarineMobService mobs;
+    private final MarineDamageFlash damageFlash;
     private final BedrockClientDetector bedrockClients = new BedrockClientDetector();
     private final Map<UUID, FallbackModel> models = new HashMap<>();
+    private final Map<UUID, FallbackModel> modelByPiece = new HashMap<>();
     private BukkitTask task;
     private long serverTick;
 
-    MarineBedrockFallbackRenderer(JavaPlugin plugin, MarineMobService mobs) {
+    MarineBedrockFallbackRenderer(JavaPlugin plugin, MarineMobService mobs, MarineDamageFlash damageFlash) {
         this.plugin = plugin;
         this.mobs = mobs;
+        this.damageFlash = damageFlash;
     }
 
     void start() {
@@ -68,6 +74,33 @@ final class MarineBedrockFallbackRenderer implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> syncVisibility(player), 2L);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    public void onFallbackInteract(PlayerInteractEntityEvent event) {
+        FallbackModel model = modelByPiece.get(event.getRightClicked().getUniqueId());
+        if (model == null || !model.anchor.isValid()) {
+            return;
+        }
+
+        event.setCancelled(true);
+        if (mobs.feed(event.getPlayer(), model.anchor)) {
+            return;
+        }
+        mobs.mount(event.getPlayer(), model.anchor);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    public void onFallbackDamage(EntityDamageEvent event) {
+        FallbackModel model = modelByPiece.get(event.getEntity().getUniqueId());
+        if (model == null || !model.anchor.isValid()) {
+            return;
+        }
+
+        event.setCancelled(true);
+        if (mobs.damage(model.anchor, event.getFinalDamage()) && model.mob.health() > 0.0) {
+            damageFlash.flash(model.mob);
+        }
     }
 
     private void tick() {
@@ -104,9 +137,9 @@ final class MarineBedrockFallbackRenderer implements Listener {
                 FallbackModel model = models.get(id);
                 if (model == null || !model.isUsable(world, mob.type())) {
                     if (model != null) {
-                        model.remove();
+                        removeModel(model);
                     }
-                    model = createModel(world, mob);
+                    model = createModel(world, entity, mob);
                     models.put(id, model);
                     syncVisibilityForModel(model);
                 }
@@ -118,7 +151,7 @@ final class MarineBedrockFallbackRenderer implements Listener {
             if (seen.contains(entry.getKey())) {
                 return false;
             }
-            entry.getValue().remove();
+            removeModel(entry.getValue());
             return true;
         });
 
@@ -129,7 +162,7 @@ final class MarineBedrockFallbackRenderer implements Listener {
         }
     }
 
-    private FallbackModel createModel(World world, MarineMobService.MarineMob mob) {
+    private FallbackModel createModel(World world, Entity anchor, MarineMobService.MarineMob mob) {
         List<FallbackPiece> pieces = new ArrayList<>();
         Location base = mob.location();
         for (BedrockFallbackProfile.Part part : BedrockFallbackProfile.forType(mob.type())) {
@@ -137,7 +170,11 @@ final class MarineBedrockFallbackRenderer implements Listener {
             ArmorStand stand = createStand(world, target, part);
             pieces.add(new FallbackPiece(part, stand));
         }
-        return new FallbackModel(mob.type(), world.getUID(), pieces);
+        FallbackModel model = new FallbackModel(mob.type(), world.getUID(), anchor, mob, pieces);
+        for (FallbackPiece piece : pieces) {
+            modelByPiece.put(piece.stand.getUniqueId(), model);
+        }
+        return model;
     }
 
     private static ArmorStand createStand(World world, Location target, BedrockFallbackProfile.Part part) {
@@ -208,11 +245,21 @@ final class MarineBedrockFallbackRenderer implements Listener {
         }
     }
 
+    private void removeModel(FallbackModel model) {
+        for (FallbackPiece piece : model.pieces) {
+            modelByPiece.remove(piece.stand.getUniqueId(), model);
+            if (piece.stand.isValid()) {
+                piece.stand.remove();
+            }
+        }
+    }
+
     private void removeAllModels() {
-        for (FallbackModel model : models.values()) {
-            model.remove();
+        for (FallbackModel model : List.copyOf(models.values())) {
+            removeModel(model);
         }
         models.clear();
+        modelByPiece.clear();
     }
 
     private static Location relative(Location base, double forward, double up, double right) {
@@ -230,16 +277,22 @@ final class MarineBedrockFallbackRenderer implements Listener {
     private static final class FallbackModel {
         private final MarineMobType type;
         private final UUID worldId;
+        private final Entity anchor;
+        private final MarineMobService.MarineMob mob;
         private final List<FallbackPiece> pieces;
 
-        private FallbackModel(MarineMobType type, UUID worldId, List<FallbackPiece> pieces) {
+        private FallbackModel(MarineMobType type, UUID worldId, Entity anchor,
+                              MarineMobService.MarineMob mob, List<FallbackPiece> pieces) {
             this.type = type;
             this.worldId = worldId;
+            this.anchor = anchor;
+            this.mob = mob;
             this.pieces = List.copyOf(pieces);
         }
 
         private boolean isUsable(World world, MarineMobType expectedType) {
-            if (world == null || !worldId.equals(world.getUID()) || type != expectedType) {
+            if (world == null || !worldId.equals(world.getUID()) || type != expectedType
+                    || !anchor.isValid() || !mob.id().equals(anchor.getUniqueId())) {
                 return false;
             }
             for (FallbackPiece piece : pieces) {
@@ -248,14 +301,6 @@ final class MarineBedrockFallbackRenderer implements Listener {
                 }
             }
             return true;
-        }
-
-        private void remove() {
-            for (FallbackPiece piece : pieces) {
-                if (piece.stand.isValid()) {
-                    piece.stand.remove();
-                }
-            }
         }
     }
 
