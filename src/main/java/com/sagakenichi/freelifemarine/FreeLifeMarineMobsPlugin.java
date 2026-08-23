@@ -42,9 +42,9 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         // into an airborne jump.
         riddenBreach.start();
         showEnhancement.start();
-        // Last motion pass: only breaks true midair stalls, so normal breach arcs remain intact.
+        // Last motion pass: match falling-block gravity and keep resting surface mobs stable.
         airFallGuard.start();
-        getLogger().info("FreeLifeMarineMobs 1.11.1 enabled: midair-stall recovery and red damage flashes are active alongside mounted-only tuning and natural marine movement.");
+        getLogger().info("FreeLifeMarineMobs 1.11.2 enabled: falling-block gravity, water-surface stabilization, red damage flashes, mounted-only tuning, and natural marine movement are active.");
     }
 
     @Override
