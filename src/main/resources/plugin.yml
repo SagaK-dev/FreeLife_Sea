@@ -1,9 +1,9 @@
 name: FreeLifeMarineMobs
-version: 1.11.1
+version: 1.11.2
 main: com.sagakenichi.freelifemarine.FreeLifeMarineMobsPlugin
 api-version: '1.21'
 author: Naokibot
-description: Animated marine mobs with simple spawning, mounted orca tuning, autonomous roaming, reliable airborne falling, red damage flashes, rider-driven breaches, and scheduled orca shows.
+description: Animated marine mobs with simple spawning, mounted orca tuning, falling-block gravity, water-surface stabilization, red damage flashes, rider-driven breaches, and scheduled orca shows.
 commands:
   marine:
     description: Manage FreeLife marine mobs, calls, mounted tuning, marine food, and orca shows.
