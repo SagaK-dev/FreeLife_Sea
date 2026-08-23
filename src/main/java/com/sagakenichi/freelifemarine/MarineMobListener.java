@@ -9,9 +9,11 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 public final class MarineMobListener implements Listener {
 
     private final MarineMobService mobs;
+    private final MarineDamageFlash damageFlash;
 
-    public MarineMobListener(MarineMobService mobs) {
+    public MarineMobListener(MarineMobService mobs, MarineDamageFlash damageFlash) {
         this.mobs = mobs;
+        this.damageFlash = damageFlash;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -32,7 +34,10 @@ public final class MarineMobListener implements Listener {
         if (mob == null) {
             return;
         }
+
         event.setCancelled(true);
-        mobs.damage(event.getEntity(), event.getFinalDamage());
+        if (mobs.damage(event.getEntity(), event.getFinalDamage()) && mob.health() > 0.0) {
+            damageFlash.flash(mob);
+        }
     }
 }
