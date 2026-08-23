@@ -19,12 +19,15 @@ final class MarineMotionTuningTest {
     }
 
     @Test
-    void onlyForwardAlignedNativeInputEnablesRiddenMotion() {
+    void lowSpeedForwardInputWorksForJavaAndTranslatedClients() {
         assertTrue(MarineMotionTuning.hasForwardRiderIntent(0.10, 1.0));
         assertTrue(MarineMotionTuning.hasForwardRiderIntent(0.10, 0.55));
+        assertTrue(MarineMotionTuning.hasForwardRiderIntent(0.005, 1.0));
+        assertTrue(MarineMotionTuning.hasForwardRiderIntent(0.002, 0.55));
+        assertFalse(MarineMotionTuning.hasForwardRiderIntent(0.0019, 1.0));
         assertFalse(MarineMotionTuning.hasForwardRiderIntent(0.10, 0.0));
         assertFalse(MarineMotionTuning.hasForwardRiderIntent(0.10, -1.0));
-        assertFalse(MarineMotionTuning.hasForwardRiderIntent(0.005, 1.0));
+        assertFalse(MarineMotionTuning.hasForwardRiderIntent(Double.NaN, 1.0));
     }
 
     @Test
