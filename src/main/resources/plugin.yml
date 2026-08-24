@@ -1,10 +1,10 @@
 name: FreeLifeMarineMobs
-version: 1.12.7
+version: 1.12.8
 main: com.sagakenichi.freelifemarine.FreeLifeMarineMobsPlugin
 api-version: '1.21'
 author: Naokibot
 softdepend: [Geyser-Spigot, floodgate]
-description: Animated marine mobs with faster server-committed autonomous swimming, Bedrock fallback rendering for Geyser/Floodgate, cross-client ridden orca input compatibility, robust spawn diagnostics, isolated airborne breach handling, mounted orca tuning, falling-block gravity, water-surface stabilization, red damage flashes, rider-driven breaches, and scheduled orca shows.
+description: Animated marine mobs with continuous ridden-orca speed on Java clients, longer autonomous swim legs with fewer direction changes, Bedrock fallback rendering for Geyser/Floodgate, robust spawn diagnostics, isolated airborne breach handling, mounted orca tuning, falling-block gravity, water-surface stabilization, red damage flashes, rider-driven breaches, and scheduled orca shows.
 commands:
   marine:
     aliases: [flsea]
