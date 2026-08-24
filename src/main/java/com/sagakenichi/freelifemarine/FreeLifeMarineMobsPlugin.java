@@ -44,7 +44,7 @@ public final class FreeLifeMarineMobsPlugin extends JavaPlugin {
         airFallGuard.start();
         autonomousMotion.start();
         bedrockRenderer.start();
-        getLogger().info("FreeLifeMarineMobs 1.12.6 enabled: server-committed autonomous swimming and Geyser/Floodgate Bedrock fallback models are active.");
+        getLogger().info("FreeLifeMarineMobs 1.12.7 enabled: faster large-body autonomous swimming and Geyser/Floodgate Bedrock fallback models are active.");
     }
 
     private void registerCommand(String name, MarineCommand command) {
