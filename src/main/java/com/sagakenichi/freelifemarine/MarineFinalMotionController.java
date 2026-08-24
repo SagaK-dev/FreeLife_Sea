@@ -43,6 +43,7 @@ final class MarineFinalMotionController {
     private final Map<UUID, AirState> airborne = new HashMap<>();
     private final Map<UUID, Long> nextAutonomousBreachTick = new HashMap<>();
     private final Map<UUID, BreachLaunch> breachLaunches = new HashMap<>();
+    private final Map<UUID, Long> lastForwardIntentTick = new HashMap<>();
     private long serverTick;
     private BukkitTask task;
 
@@ -63,6 +64,7 @@ final class MarineFinalMotionController {
         airborne.clear();
         nextAutonomousBreachTick.clear();
         breachLaunches.clear();
+        lastForwardIntentTick.clear();
     }
 
     private void tick() {
@@ -93,6 +95,9 @@ final class MarineFinalMotionController {
                 entity.setGravity(true);
 
                 Player pilot = entity instanceof Horse horse ? firstPlayerPassenger(horse) : null;
+                if (pilot == null) {
+                    lastForwardIntentTick.remove(id);
+                }
                 if (pilot != null && mob.type() == MarineMobType.ORCA && inWater && !mob.showControlled()) {
                     breachLaunches.remove(id);
                     steerRiddenOrca((Horse) entity, pilot, mob);
@@ -129,6 +134,7 @@ final class MarineFinalMotionController {
         airborne.keySet().retainAll(seen);
         nextAutonomousBreachTick.keySet().retainAll(seen);
         breachLaunches.keySet().retainAll(seen);
+        lastForwardIntentTick.keySet().retainAll(seen);
     }
 
     private boolean tryStartAutonomousBreach(Entity entity, MarineMobService.MarineMob mob) {
@@ -276,8 +282,21 @@ final class MarineFinalMotionController {
         double alignment = nativeHorizontalSpeed < DIRECTION_EPSILON
                 ? -1.0
                 : nativeHorizontal.clone().normalize().dot(lookHorizontal);
-        boolean forwardInput = MarineMotionTuning.hasForwardRiderIntent(
+        boolean detectedForward = MarineMotionTuning.hasForwardRiderIntent(
                 nativeHorizontalSpeed, alignment);
+        boolean conflictingInput = MarineMotionTuning.hasConflictingRiderIntent(
+                nativeHorizontalSpeed, alignment);
+        UUID id = horse.getUniqueId();
+
+        if (conflictingInput) {
+            lastForwardIntentTick.remove(id);
+        } else if (detectedForward) {
+            lastForwardIntentTick.put(id, serverTick);
+        }
+
+        boolean forwardInput = detectedForward || (!conflictingInput
+                && MarineMotionTuning.forwardIntentGraceActive(
+                serverTick, lastForwardIntentTick.getOrDefault(id, -1L)));
 
         horse.setAI(true);
         horse.setGravity(false);
