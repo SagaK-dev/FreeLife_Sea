@@ -13,12 +13,15 @@ final class MarineMotionTuning {
     static final int MIN_ORCA_JUMP_HEIGHT = 3;
     static final int MAX_ORCA_JUMP_HEIGHT = 13;
     static final int DEFAULT_ORCA_JUMP_HEIGHT = 10;
+    static final int RIDER_FORWARD_INTENT_GRACE_TICKS = 8;
 
-    // Java Edition can produce only a few thousandths of a block per tick from a
-    // saddled horse while it is submerged. Keep the gate low enough to recognize
-    // that forward input; the alignment check below still rejects drift and reverse input.
+    // Java Edition 1.21.1 does not expose the later Player#getCurrentInput API.
+    // A submerged saddled horse can therefore report only a few thousandths of a block
+    // per tick, and that signal can briefly disappear even while W stays held. Keep the
+    // raw gate low, then let the final motion controller retain a short intent grace.
     private static final double RIDER_INPUT_MIN_SPEED = 0.002;
     private static final double RIDER_FORWARD_ALIGNMENT = 0.40;
+    private static final double RIDER_CONFLICT_ALIGNMENT = 0.05;
     private static final double STALL_MINIMUM_DESCENT = -0.025;
     private static final double STALL_MAX_VERTICAL_VELOCITY = 0.15;
     private static final double FALL_KICK = 0.18;
@@ -31,6 +34,19 @@ final class MarineMotionTuning {
                 && Double.isFinite(forwardAlignment)
                 && horizontalSpeed >= RIDER_INPUT_MIN_SPEED
                 && forwardAlignment >= RIDER_FORWARD_ALIGNMENT;
+    }
+
+    static boolean hasConflictingRiderIntent(double horizontalSpeed, double forwardAlignment) {
+        return Double.isFinite(horizontalSpeed)
+                && Double.isFinite(forwardAlignment)
+                && horizontalSpeed >= RIDER_INPUT_MIN_SPEED
+                && forwardAlignment < RIDER_CONFLICT_ALIGNMENT;
+    }
+
+    static boolean forwardIntentGraceActive(long currentTick, long lastForwardIntentTick) {
+        return lastForwardIntentTick >= 0L
+                && currentTick >= lastForwardIntentTick
+                && currentTick - lastForwardIntentTick <= RIDER_FORWARD_INTENT_GRACE_TICKS;
     }
 
     static boolean isValidRiddenSpeed(double blocksPerSecond) {
