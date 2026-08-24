@@ -3,9 +3,9 @@ package com.sagakenichi.freelifemarine;
 /**
  * Species-specific parameters for tropical-fish-style autonomous swimming.
  *
- * <p>Vanilla fish choose nearby random swim targets rather than committing to long
- * cross-pool routes. These values keep that short wandering cadence while scaling
- * turn rate and speed for the much larger shark and orca models.</p>
+ * <p>The steering pattern follows vanilla fish AI, but the travel distances and speeds
+ * are scaled for the much larger shark/orca bodies so they visibly cross a pool instead
+ * of appearing to pivot in place.</p>
  */
 final class MarineNaturalMotionProfile {
 
@@ -14,39 +14,39 @@ final class MarineNaturalMotionProfile {
 
     static double baseCruiseBlocksPerTick(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 0.22;
-            case SHARK -> 0.18;
+            case ORCA -> 0.48;   // 9.6 blocks/s
+            case SHARK -> 0.40;  // 8.0 blocks/s
             case CRAB -> 0.05;
         };
     }
 
     static double minCruiseBlocksPerTick(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 0.13;
-            case SHARK -> 0.11;
+            case ORCA -> 0.32;   // 6.4 blocks/s
+            case SHARK -> 0.28;  // 5.6 blocks/s
             case CRAB -> 0.04;
         };
     }
 
     static double maxCruiseBlocksPerTick(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 0.34;
-            case SHARK -> 0.28;
+            case ORCA -> 0.68;   // 13.6 blocks/s
+            case SHARK -> 0.58;  // 11.6 blocks/s
             case CRAB -> 0.07;
         };
     }
 
     static double minPace(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 0.78;
-            case SHARK -> 0.80;
+            case ORCA -> 0.82;
+            case SHARK -> 0.84;
             case CRAB -> 1.0;
         };
     }
 
     static double maxPace(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 1.08;
+            case ORCA -> 1.10;
             case SHARK -> 1.12;
             case CRAB -> 1.0;
         };
@@ -84,8 +84,8 @@ final class MarineNaturalMotionProfile {
 
     static double verticalWave(MarineMobType type, long tick, double phase) {
         double amplitude = switch (type) {
-            case ORCA -> 0.0035;
-            case SHARK -> 0.0045;
+            case ORCA -> 0.0045;
+            case SHARK -> 0.0050;
             case CRAB -> 0.0;
         };
         double frequency = switch (type) {
@@ -98,60 +98,61 @@ final class MarineNaturalMotionProfile {
 
     static double minRoamDistance(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 2.8;
-            case SHARK -> 2.2;
-            case CRAB -> 0.0;
-        };
-    }
-
-    /** Vanilla SwimAroundGoal searches roughly ten blocks horizontally. */
-    static double maxRoamDistance(MarineMobType type) {
-        return switch (type) {
-            case ORCA, SHARK -> 10.0;
+            case ORCA -> 6.0;
+            case SHARK -> 5.0;
             case CRAB -> 0.0;
         };
     }
 
     /**
-     * Vanilla fish can search seven blocks vertically. The large display models use a
-     * slightly smaller range to avoid selecting water pockets that their body cannot fit.
+     * Vanilla fish pick nearby random targets. Large marine mobs keep the same wandering
+     * pattern but need a longer run so their higher cruise speed does not cause constant
+     * tight circles around two- or three-block targets.
      */
+    static double maxRoamDistance(MarineMobType type) {
+        return switch (type) {
+            case ORCA -> 18.0;
+            case SHARK -> 15.0;
+            case CRAB -> 0.0;
+        };
+    }
+
     static double maxRoamDepthChange(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 4.0;
-            case SHARK -> 5.0;
+            case ORCA -> 5.0;
+            case SHARK -> 5.5;
             case CRAB -> 0.0;
         };
     }
 
     static int minRoamTargetTicks(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 34;
-            case SHARK -> 28;
+            case ORCA -> 40;
+            case SHARK -> 34;
             case CRAB -> Integer.MAX_VALUE;
         };
     }
 
     static int maxRoamTargetTicksExclusive(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 86;
-            case SHARK -> 76;
+            case ORCA -> 110;
+            case SHARK -> 96;
             case CRAB -> Integer.MAX_VALUE;
         };
     }
 
     static float maxTurnDegreesPerTick(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 8.0F;
-            case SHARK -> 12.0F;
+            case ORCA -> 6.5F;
+            case SHARK -> 9.5F;
             case CRAB -> 5.0F;
         };
     }
 
     static double collisionScanRadius(MarineMobType type) {
         return switch (type) {
-            case ORCA -> 6.5;
-            case SHARK -> 5.0;
+            case ORCA -> 7.5;
+            case SHARK -> 6.0;
             case CRAB -> 0.0;
         };
     }
