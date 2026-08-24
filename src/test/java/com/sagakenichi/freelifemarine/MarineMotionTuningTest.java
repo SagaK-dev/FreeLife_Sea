@@ -31,6 +31,22 @@ final class MarineMotionTuningTest {
     }
 
     @Test
+    void forwardIntentGraceBridgesSparseJavaHorseInputTicks() {
+        long detectedAt = 100L;
+        assertTrue(MarineMotionTuning.forwardIntentGraceActive(detectedAt, detectedAt));
+        assertTrue(MarineMotionTuning.forwardIntentGraceActive(
+                detectedAt + MarineMotionTuning.RIDER_FORWARD_INTENT_GRACE_TICKS, detectedAt));
+        assertFalse(MarineMotionTuning.forwardIntentGraceActive(
+                detectedAt + MarineMotionTuning.RIDER_FORWARD_INTENT_GRACE_TICKS + 1L, detectedAt));
+        assertFalse(MarineMotionTuning.forwardIntentGraceActive(50L, -1L));
+
+        assertTrue(MarineMotionTuning.hasConflictingRiderIntent(0.01, -1.0));
+        assertTrue(MarineMotionTuning.hasConflictingRiderIntent(0.01, 0.0));
+        assertFalse(MarineMotionTuning.hasConflictingRiderIntent(0.01, 0.55));
+        assertFalse(MarineMotionTuning.hasConflictingRiderIntent(0.001, -1.0));
+    }
+
+    @Test
     void unsupportedAirExcludesWaterAndGround() {
         assertTrue(MarineMotionTuning.isUnsupportedAir(false, false));
         assertFalse(MarineMotionTuning.isUnsupportedAir(true, false));
