@@ -28,20 +28,19 @@ class MarineNaturalMotionProfileTest {
     }
 
     @Test
-    void roamingTargetsScaleWithTheLargerFasterBodies() {
-        for (MarineMobType type : new MarineMobType[] {MarineMobType.ORCA, MarineMobType.SHARK}) {
-            double minDistance = MarineNaturalMotionProfile.minRoamDistance(type);
-            double maxDistance = MarineNaturalMotionProfile.maxRoamDistance(type);
-            int minTicks = MarineNaturalMotionProfile.minRoamTargetTicks(type);
-            int maxTicks = MarineNaturalMotionProfile.maxRoamTargetTicksExclusive(type);
+    void roamingTargetsFavorLongStraightRuns() {
+        assertEquals(10.0, MarineNaturalMotionProfile.minRoamDistance(MarineMobType.ORCA), 1.0E-9);
+        assertEquals(28.0, MarineNaturalMotionProfile.maxRoamDistance(MarineMobType.ORCA), 1.0E-9);
+        assertEquals(8.0, MarineNaturalMotionProfile.minRoamDistance(MarineMobType.SHARK), 1.0E-9);
+        assertEquals(24.0, MarineNaturalMotionProfile.maxRoamDistance(MarineMobType.SHARK), 1.0E-9);
 
-            assertTrue(minDistance >= 5.0);
-            assertTrue(maxDistance > minDistance);
-            assertTrue(maxDistance >= 15.0);
-            assertTrue(maxDistance <= 18.0);
-            assertTrue(minTicks >= 30);
-            assertTrue(maxTicks > minTicks);
-        }
+        assertTrue(MarineNaturalMotionProfile.minRoamTargetTicks(MarineMobType.ORCA) >= 120);
+        assertTrue(MarineNaturalMotionProfile.maxRoamTargetTicksExclusive(MarineMobType.ORCA) > 240);
+        assertTrue(MarineNaturalMotionProfile.minRoamTargetTicks(MarineMobType.SHARK) >= 100);
+        assertTrue(MarineNaturalMotionProfile.maxRoamTargetTicksExclusive(MarineMobType.SHARK) > 200);
+
+        assertTrue(MarineNaturalMotionProfile.maxTurnDegreesPerTick(MarineMobType.ORCA) <= 4.0F);
+        assertTrue(MarineNaturalMotionProfile.maxTurnDegreesPerTick(MarineMobType.SHARK) <= 6.0F);
     }
 
     @Test
